@@ -77,12 +77,11 @@ def update_sg(sg, sg_id, rule, scope, direction, text_output):
             text_output = text_output + utils.stringify_rule(rule) + ' deleted successfully from sg : ' + str(sg_id) + '; '
 
         except Exception as e:
-            text_output = text_output + f'Error while trying to delete security group. Error: {e}'
+            text_output = f'{text_output}Error while trying to delete security group. Error: {e}'
+
             return text_output
 
-        # check if one is existing first ! avoid duplicates and exception
-        found = is_rule_exists_in_sg(sg, rule, direction, scope)
-        if found:
+        if found := is_rule_exists_in_sg(sg, rule, direction, scope):
             return text_output
         try:
 
@@ -96,7 +95,8 @@ def update_sg(sg, sg_id, rule, scope, direction, text_output):
             text_output = text_output + utils.stringify_rule(rule) + ' created successfully in sg : ' + str(sg_id) + '; '
 
         except Exception as e:
-            text_output = text_output + f'Error while trying to create security group. Error: {e}'
+            text_output = f'{text_output}Error while trying to create security group. Error: {e}'
+
             return text_output
 
     elif direction == 'outbound':
@@ -119,12 +119,11 @@ def update_sg(sg, sg_id, rule, scope, direction, text_output):
             text_output = text_output + utils.stringify_rule(rule) + ' deleted successfully from sg : ' + str(sg_id) + '; '
 
         except Exception as e:
-            text_output = text_output + f'Error while trying to delete security group. Error: {e}'
+            text_output = f'{text_output}Error while trying to delete security group. Error: {e}'
+
             return text_output
 
-        # check if one is existing first ! avoid duplicates and exception
-        found = is_rule_exists_in_sg(sg, rule, direction, scope)
-        if found:
+        if found := is_rule_exists_in_sg(sg, rule, direction, scope):
             return text_output
         try:
             ip_perm[0]['IpRanges'][0]['CidrIp'] = scope  # ip permissions to create of a new rule
@@ -135,10 +134,11 @@ def update_sg(sg, sg_id, rule, scope, direction, text_output):
             text_output = text_output + utils.stringify_rule(rule) + ' created successfully in sg : ' + str(sg_id) + '; '
 
         except Exception as e:
-            text_output = text_output + f'Error while trying to create security group. Error: {e}'
+            text_output = f'{text_output}Error while trying to create security group. Error: {e}'
+
             return text_output
     else:
-        text_output = text_output + f'Error unknown direction ; \n'
+        text_output = f'{text_output}Error unknown direction ; \n'
 
     return text_output
 
@@ -158,14 +158,13 @@ def run_action(boto_session, rule, entity, params):
     sg = ec2_resource.SecurityGroup(sg_id)
 
     for rule in entity[f'{direction}Rules']:
-        if rule[PORT_FROM] <= int(port) <= rule[PORT_TO]:
-            if change_from_scope == rule[SCOPE] or change_from_scope == '*':
-                if rule[PROTOCOL] == 'ALL':
-                    rule[PROTOCOL] = ALL_TRAFFIC_PROTOCOL  # '-1'
-                text_output = text_output + ' rule was found in security group with port in range ;'
-                text_output = text_output + update_sg(sg, sg_id, rule, change_to_scope, direction, text_output)
+        if rule[PORT_FROM] <= int(port) <= rule[
+            PORT_TO
+        ] and change_from_scope in [rule[SCOPE], '*']:
+            if rule[PROTOCOL] == 'ALL':
+                rule[PROTOCOL] = ALL_TRAFFIC_PROTOCOL  # '-1'
+            text_output = f'{text_output} rule was found in security group with port in range ;'
 
-        else:
-            continue
+            text_output = text_output + update_sg(sg, sg_id, rule, change_to_scope, direction, text_output)
 
     return text_output

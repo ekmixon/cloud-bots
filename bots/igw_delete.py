@@ -16,7 +16,7 @@ def run_action(boto_session,rule,entity,params):
     vpc_id = entity['id']
     igw_id = entity['internetGateways'][0]['externalId']
 
-    ec2_resource = boto_session.resource('ec2')    
+    ec2_resource = boto_session.resource('ec2')
     ec2_client = boto_session.client('ec2')
 
     try:
@@ -31,7 +31,7 @@ def run_action(boto_session,rule,entity,params):
 
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
-            text_output = text_output + "Unexpected error: %s \n" % str(result)
+            text_output += "Unexpected error: %s \n" % str(result)
 
         # Look through all the reservations for the instances with public IPs. Put all the instance IDs into an array
         instances_to_turn_off=[]
@@ -53,12 +53,12 @@ def run_action(boto_session,rule,entity,params):
 
             responseCode = result['ResponseMetadata']['HTTPStatusCode']
             if responseCode >= 400:
-                text_output = text_output + "Unexpected error: %s \n" % str(result)
+                text_output += "Unexpected error: %s \n" % str(result)
                 return text_output
             else:
                 instances = ' '.join(instances_to_turn_off)
-                text_output = text_output + "Instances that are being stopped: %s \n" % instances
-        
+                text_output += "Instances that are being stopped: %s \n" % instances
+
                 instance = ec2_resource.Instance(instances_to_turn_off[0])
                 while instance.state['Name'] not in 'stopped':
                     print(f'{__file__} - igw_delete.py - Sleeping while waiting for instances to turn off (usually about 45 seconds)')
@@ -67,7 +67,8 @@ def run_action(boto_session,rule,entity,params):
                 print(f'{__file__} - Instances are fully shut down. Continuing')
 
         else:
-            text_output = text_output + "No instances in this VPC that have public IPs. Trying to remove the IGW next.\n"
+            text_output += "No instances in this VPC that have public IPs. Trying to remove the IGW next.\n"
+
 
         #Detach the IGW
         response = ec2_client.detach_internet_gateway(
@@ -77,10 +78,10 @@ def run_action(boto_session,rule,entity,params):
 
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
-            text_output = text_output + "Unexpected error: %s \n" % str(result)
+            text_output += "Unexpected error: %s \n" % str(result)
             return text_output
         else:
-            text_output = text_output + "IGW detached on VPC %s \n" % vpc_id
+            text_output += "IGW detached on VPC %s \n" % vpc_id
 
 
         #Delete the IGW
@@ -88,10 +89,10 @@ def run_action(boto_session,rule,entity,params):
 
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
-            text_output = text_output + "Unexpected error: %s \n" % str(result)
+            text_output += "Unexpected error: %s \n" % str(result)
             return text_output
         else:
-            text_output = text_output + "IGW deleted %s \n" % igw_id
+            text_output += "IGW deleted %s \n" % igw_id
 
 
     except ClientError as e:

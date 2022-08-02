@@ -13,7 +13,7 @@ def run_action(boto_session,rule,entity,params):
     user_id = entity['ownerId']
 
     ec2_client = boto_session.client('ec2')
-    
+
     result = ec2_client.modify_image_attribute(
         ImageId=ami_id,
         LaunchPermission={
@@ -27,9 +27,8 @@ def run_action(boto_session,rule,entity,params):
     )
 
     responseCode = result['ResponseMetadata']['HTTPStatusCode']
-    if responseCode >= 400:
-        text_output = "Unexpected error: %s \n" % str(result)
-    else:
-        text_output = "AMI successfully set to private: %s \n" % ami_id
-
-    return text_output 
+    return (
+        "Unexpected error: %s \n" % str(result)
+        if responseCode >= 400
+        else "AMI successfully set to private: %s \n" % ami_id
+    ) 

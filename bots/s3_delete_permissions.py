@@ -18,10 +18,10 @@ def run_action(boto_session,rule,entity,params):
         #sendEvent out the S3 permissions first so we can reference them later
         bucket_policy = s3_client.get_bucket_policy(Bucket=bucket)['Policy']
         text_output = "Bucket policy that will be deleted: \n " + str(bucket_policy) + "\n"
-                
+
         #Call S3 to delete the bucket policy for the given bucket
         result = s3_client.delete_bucket_policy(Bucket=bucket)
-        
+
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
             text_output = text_output + "Unexpected error: %s \n" % str(result)
@@ -40,7 +40,7 @@ def run_action(boto_session,rule,entity,params):
     try:
         #list bucket ACLs
         bucket_acls = s3_client.get_bucket_acl(Bucket=bucket)['Grants']
-        
+
         if len(bucket_acls) == 1:
             text_output = text_output + "Only the CanonicalUser ACL found. Skipping.\n"
             return text_output
@@ -49,13 +49,13 @@ def run_action(boto_session,rule,entity,params):
 
         # Unset the bucket ACLs
         result = s3_client.put_bucket_acl(Bucket=bucket,ACL='private')
-    
+
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
             text_output = text_output + "Unexpected error: %s \n" % str(result) 
         else:
             text_output = text_output + "Bucket ACL deleted: %s \n" % bucket
-    
+
     except ClientError as e:
         text_output = text_output + "Unexpected error: %s \n" % e
 

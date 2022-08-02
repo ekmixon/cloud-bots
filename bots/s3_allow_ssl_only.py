@@ -17,32 +17,23 @@ CREATE = 2
     # edit or add policy that denny data not encrypted with ssl
 
 def create_statement_block(bucket_arn):
-    statement_block = [
+    return [
         {
             "Sid": "AllowSSLRequestsOnly",
             "Action": "s3:*",
             "Effect": "Deny",
-            "Resource": [
-                f"{bucket_arn}",
-                f"{bucket_arn}/*"
-            ],
-            "Condition": {
-                "Bool": {
-                    "aws:SecureTransport": "false"
-                }
-            },
-            "Principal": "*"
+            "Resource": [f"{bucket_arn}", f"{bucket_arn}/*"],
+            "Condition": {"Bool": {"aws:SecureTransport": "false"}},
+            "Principal": "*",
         }
     ]
-
-    return statement_block
 
 def check_bucket_policy(bucket_policy):
     """
     return if we need to edit or create policy
     """
     # if this fails 3 times this means that the bucket has no policy
-    for attempt in range(3):
+    for _ in range(3):
         try:
             # try to access the bucket policy
             bucket_policy.policy

@@ -49,7 +49,7 @@ def run_action(boto_session,rule,entity,params):
 
             text_output = "Quarantine SG created %s \n" % result['GroupId']
             quarantine_sg_id = result['GroupId']
-        
+
     except ClientError as e:
         text_output = "Unexpected error: %s \n" % e
 

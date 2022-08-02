@@ -12,7 +12,7 @@ def run_action(boto_session,rule,entity,params):
     text_output = ''
     instance = entity['id']
     ec2_client = boto_session.client('ec2')
-    
+
     # Get the allocation id(s) from the instance
     describe_response = ec2_client.describe_addresses(
         Filters=[
@@ -22,7 +22,7 @@ def run_action(boto_session,rule,entity,params):
             }
         ]
     )
-   
+
     addresses = describe_response['Addresses']
     print(f'{__file__} - {addresses}')
 

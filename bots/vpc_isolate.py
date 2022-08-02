@@ -33,8 +33,7 @@ def create_acl(ec2_client, vpc_id):
         # Going through all each acl and checking for associated subnets
         for acl in network_acl_iterator.get('NetworkAcls'):
 
-            associations = acl.get('Associations')
-            if associations:
+            if associations := acl.get('Associations'):
                 # gets all subnets from the acl in an array and adding it to association_ids array
                 association_ids += [association.get('NetworkAclAssociationId') for association in associations]
 
@@ -98,16 +97,17 @@ def create_deny_policy(boto_session, region, vpc_id):
                 "Effect": "Deny",
                 "Resource": [
                     f"arn:aws:ec2:{region}:*:vpc/{vpc_id}",
-                    f"arn:aws:ec2:{region}:*:security-group/*"
+                    f"arn:aws:ec2:{region}:*:security-group/*",
                 ],
                 "Condition": {
                     "ArnEquals": {
-                        f"ec2:Vpc": f"arn:aws:ec2:{region}:*:vpc/{vpc_id}"
+                        "ec2:Vpc": f"arn:aws:ec2:{region}:*:vpc/{vpc_id}"
                     }
-                }
+                },
             }
-        ]
+        ],
     }
+
     try:
         # Create a policy
         iam_client.create_policy(
@@ -133,12 +133,7 @@ def check_for_policy(boto_session, policy_arn):
     except ClientError as e:
         error = e.response['Error']['Code']
 
-        if error == 'NoSuchEntity':
-            # If the policy isn't there - add it into the account
-            return False
-        else:
-            return f'Unexpected error: {e}\n'
-
+        return False if error == 'NoSuchEntity' else f'Unexpected error: {e}\n'
     return True
 
 

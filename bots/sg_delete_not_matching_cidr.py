@@ -44,7 +44,8 @@ def run_action(boto_session, rule, entity, params):
     try:
         port, scope, direction, = params  # get params
     except Exception as e:
-        text_output = text_output + f'Params handling error. Please check parameters and try again. Error: {e}'
+        text_output += f'Params handling error. Please check parameters and try again. Error: {e}'
+
         raise Exception(text_output)
 
     # Create an EC2 resource
@@ -55,15 +56,12 @@ def run_action(boto_session, rule, entity, params):
 
     # going through all the user's sg and check for mismatch
     for rule in entity[f'{direction}Rules']:
-        if rule[PORT_FROM] <= int(port) <= rule[PORT_TO]:
-            # port found , if the scope doesn't match , rule will be deleted
-            if not utils.is_scope_contained_by_other_ipv4(rule[SCOPE], scope):
-                # rule scope is outside of the scope given , hence need to be deleted
-                text_output = text_output + utils.stringify_rule(
-                    rule) + 'rule was found in security group with port in range; '
-                text_output = utils.delete_sg(sg, sg_id, rule, direction, text_output)
-
-        else:
-            continue
+        if rule[PORT_FROM] <= int(port) <= rule[
+            PORT_TO
+        ] and not utils.is_scope_contained_by_other_ipv4(rule[SCOPE], scope):
+            # rule scope is outside of the scope given , hence need to be deleted
+            text_output = text_output + utils.stringify_rule(
+                rule) + 'rule was found in security group with port in range; '
+            text_output = utils.delete_sg(sg, sg_id, rule, direction, text_output)
 
     return text_output

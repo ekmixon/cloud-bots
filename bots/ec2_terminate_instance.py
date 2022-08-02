@@ -12,11 +12,10 @@ def run_action(boto_session,rule,entity,params):
     ec2_client = boto_session.client('ec2')
 
     result = ec2_client.terminate_instances(InstanceIds=[instance])
-    
-    responseCode = result['ResponseMetadata']['HTTPStatusCode']
-    if responseCode >= 400:
-        text_output = "Unexpected error: %s \n" % result
-    else:
-        text_output = "Instance terminated: %s \n" % instance
 
-    return text_output
+    responseCode = result['ResponseMetadata']['HTTPStatusCode']
+    return (
+        "Unexpected error: %s \n" % result
+        if responseCode >= 400
+        else "Instance terminated: %s \n" % instance
+    )

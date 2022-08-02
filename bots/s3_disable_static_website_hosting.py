@@ -20,6 +20,6 @@ def run_action(boto_session, rule, entity, params):
         bucket_website.delete()
         text_output = f'Disabled static website hosting from Bucket : {bucket_name}'
     except ClientError as e:
-        text_output = text_output + f'Unexpected error: {e}.'
+        text_output = f'{text_output}Unexpected error: {e}.'
 
     return text_output

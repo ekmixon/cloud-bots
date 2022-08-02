@@ -39,7 +39,7 @@ def create_role(iam_client):
             AssumeRolePolicyDocument=json.dumps(trust_policy),
             Description='Created by Dome9 CloudBots. This is to allow CloudTrail to send logs to CloudWatch'
             )
-    
+
         responseCode = result['ResponseMetadata']['HTTPStatusCode']    
         if responseCode >= 400:
             text_output = "Unexpected error: %s \n" % str(result)
@@ -138,7 +138,7 @@ def create_log_group(boto_session,log_group_name):
             text_output = "Log group already exists. Skipping\n"
         else:
             text_output = "Unexpected error: %s \n" % e
-    
+
 
     return text_output 
 
@@ -154,7 +154,7 @@ def update_trail(boto_session,trail_name,log_group_arn,log_role_arn):
             CloudWatchLogsLogGroupArn=log_group_arn,
             CloudWatchLogsRoleArn=log_role_arn,
         )
-                 
+
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
             text_output = "Unexpected error: %s \n" % str(result)
@@ -182,12 +182,21 @@ def run_action(boto_session,rule,entity,params):
         log_group_name = "CloudTrail/DefaultLogGroup" 
         text_output = "No log_group_name defined in params. Defaulting to CloudTrail/DefaultLogGroup\n"
 
-    
-    log_group_arn = "arn:aws:logs:" + region + ":" + accountNumber + ":log-group:" + log_group_name + ":*"
-    log_role_arn = "arn:aws:iam::" + accountNumber + ":role/CloudTrail_CloudWatchLogs_Role"
-    log_policy_arn = "arn:aws:iam::" + accountNumber + ":policy/CloudWatchLogsAllowDelivery"
 
-    text_output = text_output + create_log_group(boto_session,log_group_name)
+    log_group_arn = (
+        f"arn:aws:logs:{region}:{accountNumber}:log-group:{log_group_name}:*"
+    )
+
+    log_role_arn = (
+        f"arn:aws:iam::{accountNumber}:role/CloudTrail_CloudWatchLogs_Role"
+    )
+
+    log_policy_arn = (
+        f"arn:aws:iam::{accountNumber}:policy/CloudWatchLogsAllowDelivery"
+    )
+
+
+    text_output += create_log_group(boto_session,log_group_name)
     text_output = text_output + create_role(iam_client) # Create role
     text_output = text_output + create_log_delivery_policy(iam_client,log_group_arn) # Create policy
     text_output = text_output + add_policy_to_role(iam_client,log_policy_arn) # Attach policy > role

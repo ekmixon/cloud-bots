@@ -48,14 +48,14 @@ def run_action(boto_session,rule,entity,params):
 
             text_output = "Quarantine SG created %s \n" % result['GroupId']
             quarantine_sg_id = result['GroupId']
-        
+
     except ClientError as e:
         text_output = "Unexpected error: %s \n" % e
 
     text_output = text_output + "Updating the instance SG attachments to only contain the quarantine SG\n"
 
     #Attach the instance to only the quarantine SG
- 
+
     try:
         result = ec2_resource.Instance(instance_id).modify_attribute(Groups=[quarantine_sg_id])  
         responseCode = result['ResponseMetadata']['HTTPStatusCode']

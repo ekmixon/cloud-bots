@@ -63,18 +63,23 @@ def add_bucket_policy(boto_session, account_id, bucket_name):
                 'Effect': 'Allow',
                 'Principal': {'Service': 'cloudtrail.amazonaws.com'},
                 'Action': 's3:GetBucketAcl',
-                'Resource': 'arn:aws:s3:::' + bucket_name
+                'Resource': f'arn:aws:s3:::{bucket_name}',
             },
             {
                 'Sid': 'AWSCloudTrailWrite20150319',
                 'Effect': 'Allow',
                 'Principal': {'Service': 'cloudtrail.amazonaws.com'},
                 'Action': 's3:PutObject',
-                'Resource': 'arn:aws:s3:::' + bucket_name + '/AWSLogs/' + account_id + '/*',
-                'Condition': {'StringEquals': {'s3:x-amz-acl': 'bucket-owner-full-control'}}
-            }
-        ]
+                'Resource': f'arn:aws:s3:::{bucket_name}/AWSLogs/{account_id}/*',
+                'Condition': {
+                    'StringEquals': {
+                        's3:x-amz-acl': 'bucket-owner-full-control'
+                    }
+                },
+            },
+        ],
     }
+
 
     try:
         # Create an S3 client
@@ -123,12 +128,12 @@ def create_trail(boto_session, trail_name, bucket_name):
 
                 responseCode = result['ResponseMetadata']['HTTPStatusCode']
                 if responseCode >= 400:
-                    text_output = text_output + 'Unexpected error: %s \n' % str(result)
+                    text_output += 'Unexpected error: %s \n' % str(result)
                 else:
-                    text_output = text_output + 'CloudTrail logging enabled\n'
+                    text_output += 'CloudTrail logging enabled\n'
 
             except ClientError as e:
-                text_output = text_output + 'Unexpected error: %s \n' % e
+                text_output += 'Unexpected error: %s \n' % e
 
     except ClientError as e:
         text_output = 'Unexpected error: %s \n' % e
@@ -159,19 +164,23 @@ def run_action(boto_session, rule, entity, params):
     # Check params for usable values and if not - go to defaults
     try:  # Params[0] should be the traffic type.
         trail_name = env_variables['trail_name']
-        text_output = text_output + 'CloudTrail name will be %s \n' % trail_name
+        text_output += 'CloudTrail name will be %s \n' % trail_name
     except:
         trail_name = 'allRegionTrail'
-        text_output = text_output + 'Trail name not set. Defaulting to allRegionTrail.\n'
+        text_output += 'Trail name not set. Defaulting to allRegionTrail.\n'
 
     try:
         bucket_name = env_variables['bucket_name']
-        text_output = text_output + 'Sending trails to bucket: %s \n' % bucket_name
+        text_output += 'Sending trails to bucket: %s \n' % bucket_name
     except:
         try:
-            bucket_name = 'acct%scloudtraillogs' % account_id
-            text_output = text_output + 'No target bucket defined in params. Creating a local bucket instead with bucket name %s \n' % bucket_name
-            text_output = text_output + make_bucket(boto_session, region, account_id, bucket_name)
+            bucket_name = f'acct{account_id}cloudtraillogs'
+            text_output += (
+                'No target bucket defined in params. Creating a local bucket instead with bucket name %s \n'
+                % bucket_name
+            )
+
+            text_output += make_bucket(boto_session, region, account_id, bucket_name)
             text_output = text_output + add_bucket_policy(boto_session, account_id, bucket_name)
         except ClientError as e:
             text_output = text_output + 'Unexpected error: %s \n' % e

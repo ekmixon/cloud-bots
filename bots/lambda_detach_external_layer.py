@@ -19,15 +19,12 @@ def run_action(boto_session, rule, entity, params):
     text_output = ''
     lambda_function_name = entity.get('name')
 
-    # Search for event in cloudtrail
-    event = bots_utils.cloudtrail_event_lookup(boto_session, entity, EVENT_NAME,
-                                               resource_name_to_filter=lambda_function_name)
-
-    if not event:
-        # If no cloud trail event found - do not run bot
-        text_output = f'Error: No matching \'{EVENT_NAME}\' events were found in cloud trail. Bot wasn\'t executed'
-
-    else:
+    if event := bots_utils.cloudtrail_event_lookup(
+        boto_session,
+        entity,
+        EVENT_NAME,
+        resource_name_to_filter=lambda_function_name,
+    ):
         try:
             # Event found - get layer name
             layer_name = get_details_from_event(event)
@@ -36,6 +33,10 @@ def run_action(boto_session, rule, entity, params):
         else:
             # If event was parsed successfully - detach the layer from the lambda function
             text_output = detach_layer_from_lambda(boto_session, lambda_function_name, layer_name)
+
+    else:
+        # If no cloud trail event found - do not run bot
+        text_output = f'Error: No matching \'{EVENT_NAME}\' events were found in cloud trail. Bot wasn\'t executed'
 
     return text_output
 

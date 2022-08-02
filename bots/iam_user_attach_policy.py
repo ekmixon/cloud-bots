@@ -71,17 +71,25 @@ def run_action(boto_session, rule, entity, params):
             if key == 'policy_arn':
                 if 'arn:aws:iam::aws:policy' in value:
                     policy_arn = value
-                    text_output = text_output + 'AWS Managed policy specified for attachment\nARN: %s \n' % value
+                    text_output += (
+                        'AWS Managed policy specified for attachment\nARN: %s \n'
+                        % value
+                    )
+
 
                 elif '$ACCOUNT_ID' in value:
                     # Look for '$ACCOUNT_ID' and replace it with the current account number
                     account_id = entity['accountNumber']
                     policy_arn = value.replace('$ACCOUNT_ID', account_id)
-                    text_output = text_output + 'Policy ARN that we are attaching to the user: %s \n' % policy_arn
+                    text_output += (
+                        'Policy ARN that we are attaching to the user: %s \n'
+                        % policy_arn
+                    )
+
 
                 else:
                     policy_arn = value
-                    text_output = text_output + 'Policy ARN specified for attachment: %s \n' % value
+                    text_output += 'Policy ARN specified for attachment: %s \n' % value
 
             else:
                 text_output = text_output + 'Params do not match expected values. Exiting.\n' + usage
@@ -98,7 +106,7 @@ def run_action(boto_session, rule, entity, params):
     ## Check and add the policy to the user
     try:
         function_output, found_policy = check_for_policy(iam_client, policy_arn)
-        text_output = text_output + function_output
+        text_output += function_output
 
         if found_policy:
             text_output = text_output + add_policy_to_user(iam_client, user, policy_arn)

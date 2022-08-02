@@ -108,7 +108,7 @@ def delete_entry(boto_session, params):
     '''
 
     text_output = ''
-  
+
     ec2_client = boto_session.client('ec2')
 
     try:
@@ -135,7 +135,7 @@ def get_event(boto_session, attribute_value, entity={}):
 
     # create CloudTrail client
     client = boto_session.client('cloudtrail')
-    response = dict()
+    response = {}
     if entity:
         # set the start time to search in cloudtrail
         # get the event details
@@ -152,12 +152,12 @@ def get_event(boto_session, attribute_value, entity={}):
 
     if not response:
         return 'No event found!', None
-        
+
     # gets dictionary from cloudtrail string
- 
+
     cloud_trail = json.loads(response.get('CloudTrailEvent'))
     event_params = cloud_trail.get('requestParameters')
-    
+
     # Capitalizing key names to use event_params in create and replace entry functions.
     # Function wont work if keys not capitalized.
     if 'portRange' in event_params and event_params['portRange']:
@@ -172,18 +172,19 @@ def get_event(boto_session, attribute_value, entity={}):
 
 
 def run_action(boto_session, rule, entity, params):
-    text_output = ''
     acl_id = entity.get('id')
 
     # There are 3 possible events. Each has it's own solution. This is a dict to help assign a function to each case.
     event_name_to_function_mapping = {'ReplaceNetworkAclEntry': replace_entry, 'DeleteNetworkAclEntry': create_entry, 'CreateNetworkAclEntry': delete_entry}
 
     # getting alert time from additional params in message. and turning value string into dictionary
-    
+
     event_name, event_params = get_event(boto_session, acl_id, entity)
 
-    # use functions mapping dictionary to get function for event.
-    if event_name in event_name_to_function_mapping.keys():
-        text_output = event_name_to_function_mapping.get(event_name)(boto_session, event_params)
-
-    return text_output
+    return (
+        event_name_to_function_mapping.get(event_name)(
+            boto_session, event_params
+        )
+        if event_name in event_name_to_function_mapping
+        else ''
+    )

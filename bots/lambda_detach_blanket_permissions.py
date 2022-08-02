@@ -31,7 +31,11 @@ def run_action(boto_session, rule, entity, params):
                 )
 
                 policy_name = arn.split('/')[-1]
-                text_output = text_output + ' detach policy: %s from lambda role: %s' % (policy_name, role_name)
+                text_output = (
+                    text_output
+                    + f' detach policy: {policy_name} from lambda role: {role_name}'
+                )
+
 
             except ClientError as e:
                 text_output = "Unexpected error: %s \n" % e
@@ -50,14 +54,17 @@ def get_admin_policies(policy):
 
     try:
         for policy_name in policy['combinedPolicies']:  # for any policy
-            for Statement in policy_name['policyDocument']['Statement']:  # check the Statement of the policy
-                if Statement['Effect'] == "Allow" and 'Resource' in Statement and "*" in str(Statement['Resource']):
-                    arn_list.append(policy_name['id'])
+            arn_list.extend(
+                policy_name['id']
+                for Statement in policy_name['policyDocument']['Statement']
+                if Statement['Effect'] == "Allow"
+                and 'Resource' in Statement
+                and "*" in str(Statement['Resource'])
+            )
 
         arn_list = list(dict.fromkeys(arn_list))  # remove duplicate in the list
 
     except ClientError as e:
-        text_output = "Unexpected error: %s \n" % e
-        return text_output
+        return "Unexpected error: %s \n" % e
 
     return arn_list

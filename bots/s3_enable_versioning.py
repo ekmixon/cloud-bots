@@ -13,13 +13,12 @@ def run_action(boto_session,rule,entity,params):
 
     s3_resource = boto_session.resource('s3')
     bucket_versioning = s3_resource.BucketVersioning(bucket_name)
-    
+
     result = bucket_versioning.enable()
 
     responseCode = result['ResponseMetadata']['HTTPStatusCode']
-    if responseCode >= 400:
-        text_output = "Unexpected error: %s \n" % str(result)
-    else:
-        text_output = "Bucket versioning enabled: %s \n" % bucket_name
-
-    return text_output 
+    return (
+        "Unexpected error: %s \n" % str(result)
+        if responseCode >= 400
+        else "Bucket versioning enabled: %s \n" % bucket_name
+    ) 

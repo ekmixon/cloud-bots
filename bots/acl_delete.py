@@ -41,10 +41,10 @@ def run_action(boto_session, rule, entity, params):
 
         acl_id = acl_description.get('networkAclId')
 
-        
+
         # checking if acl was not creates as default vpc's network acl
         if not acl_description.get('isDefault'):
-            
+
             ec2_client.delete_network_acl(NetworkAclId=acl_id,)
             text_output = 'Network acl deleted successfully\n'
 

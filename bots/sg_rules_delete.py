@@ -18,10 +18,13 @@ def run_action(boto_session,rule,entity,params):
 
     #Save the inbound/outbound rules for logging/forensics
     egressRules = sgInformation['SecurityGroups'][0]['IpPermissionsEgress']
-    text_output = "Egress rules to be deleted: " + str(egressRules) + "\n"
+    text_output = f"Egress rules to be deleted: {str(egressRules)}" + "\n"
 
     ingressRules = sgInformation['SecurityGroups'][0]['IpPermissions']
-    text_output = text_output + "Ingress rules to be deleted: " + str(ingressRules) + "\n"
+    text_output = (
+        f"{text_output}Ingress rules to be deleted: {str(ingressRules)}" + "\n"
+    )
+
 
     #New client for making changes
     ec2_resource = boto_session.resource('ec2')
@@ -55,7 +58,7 @@ def run_action(boto_session,rule,entity,params):
                 print(f'{__file__} -  No groupName to clean up - deleting rules')
 
         result = sg.revoke_egress(IpPermissions=egressRules)
-        
+
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
             text_output = "Unexpected error: %s \n" % str(result)

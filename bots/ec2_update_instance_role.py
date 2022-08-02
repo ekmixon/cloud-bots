@@ -27,7 +27,11 @@ def run_action(boto_session, rule, entity, params):
 
             if key == 'policy_arn':
                 policy_arn = value
-                text_output = text_output + 'Policy ARN that we are attaching to the instance role: %s \n' % policy_arn
+                text_output += (
+                    'Policy ARN that we are attaching to the instance role: %s \n'
+                    % policy_arn
+                )
+
 
             else:
                 text_output = text_output + 'Params do not match expected values. Exiting.\n' + usage
@@ -40,7 +44,7 @@ def run_action(boto_session, rule, entity, params):
         text_output = 'Wrong amount of params inputs detected. Exiting.\n' + usage
         return text_output
 
-    # If the instance has an instance profile, try to update the role to have the new policy attached. It it's already attached, it'll still return a 200 so no need to worry about too much error handling. 
+    # If the instance has an instance profile, try to update the role to have the new policy attached. It it's already attached, it'll still return a 200 so no need to worry about too much error handling.
     if len(entity['roles']) > 0:
         try:
             result = iam_client.attach_role_policy(
@@ -49,12 +53,12 @@ def run_action(boto_session, rule, entity, params):
             )
             responseCode = result['ResponseMetadata']['HTTPStatusCode']
             if responseCode >= 400:
-                text_output = text_output + 'Unexpected error: %s \n' % str(result)
+                text_output += 'Unexpected error: %s \n' % str(result)
             else:
-                text_output = text_output + 'Policy successfully attached to instance role\n'
+                text_output += 'Policy successfully attached to instance role\n'
 
         except ClientError as e:
-            text_output = text_output + 'Unexpected error: %s \n' % e
+            text_output += 'Unexpected error: %s \n' % e
 
     else:
         text_output = 'No existing role found to attach the policy to. Please use ec2_attach_instance_role to do the initial attachment.\nExiting\n'

@@ -80,7 +80,7 @@ def run_action(boto_session, rule, entity, params):
             Policy=policy
         )
 
-        text_output = "SSL policy added to bucket: %s" % bucket_name
+        text_output = f"SSL policy added to bucket: {bucket_name}"
 
     except ClientError as e:
         text_output = "Unexpected error: %s \n" % e

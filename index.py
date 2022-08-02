@@ -11,7 +11,6 @@ SNS_TOPIC_ARN = os.getenv('SNS_TOPIC_ARN', '')
 # Bring the data in and parse the SNS message
 def lambda_handler(event, context):
     start_time = time.time()
-    output_message = {}
     print(f'{__file__} - Start running')
     if event['Records'][0]['Sns']['Message']:
         raw_message = event['Records'][0]['Sns']['Message']
@@ -25,8 +24,7 @@ def lambda_handler(event, context):
 
     print(f'{__file__} - Source message - {source_message}')
 
-    output_message['ReportTime'] = source_message.get('reportTime', 'N.A')
-
+    output_message = {'ReportTime': source_message.get('reportTime', 'N.A')}
     if (source_message.get('account')):
         output_message['Account id'] = source_message['account'].get('id', 'N.A')
 
@@ -48,6 +46,6 @@ def lambda_handler(event, context):
 
     send_logs_to_dome9 = os.getenv('SEND_LOGS_TO_DOME9', '')
     print(f'{__file__} - send_logs_to_dome9 {send_logs_to_dome9}')
-    if(send_logs_to_dome9 != 'false' and send_logs_to_dome9 != 'False'):
+    if send_logs_to_dome9 not in ['false', 'False']:
         send_logs(output_message, start_time, source_message.get('account').get('vendor'))
     return

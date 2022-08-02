@@ -14,12 +14,12 @@ def run_action(boto_session,rule,entity,params):
     accountNumber = entity['accountNumber']
     region = entity['region'].replace("_","-")
     text_output = ""
-    
+
     s3_client = boto_session.client('s3')
     s3_resource = boto_session.resource('s3')
     bucket_logging = s3_resource.BucketLogging(bucket_name)
 
-    target_bucket_name = accountNumber + "s3accesslogs" + region
+    target_bucket_name = f"{accountNumber}s3accesslogs{region}"
 
     #The target bucket needs to be in the same region as the remediation bucket or it'll throw a CrossLocationLoggingProhibitted error.
     try:
@@ -47,13 +47,13 @@ def run_action(boto_session,rule,entity,params):
                     CreateBucketConfiguration={'LocationConstraint': region},
                     ACL='log-delivery-write'
                     )
-            
+
             responseCode = result['ResponseMetadata']['HTTPStatusCode']
             if responseCode >= 400:
                 text_output = "Unexpected error: %s \n" % str(result)
             else:
                 text_output = "Logging bucket created %s \n" % target_bucket_name
-       
+
         except ClientError as e:
             text_output = "Unexpected error: %s \n" % e
 
@@ -70,11 +70,15 @@ def run_action(boto_session,rule,entity,params):
 
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
-            text_output = text_output + "Unexpected error: %s \n" % str(result)
+            text_output += "Unexpected error: %s \n" % str(result)
         else:
-            text_output = text_output + "Bucket logging enabled from bucket: %s to bucket: %s \n" % (bucket_name,target_bucket_name)
+            text_output += (
+                "Bucket logging enabled from bucket: %s to bucket: %s \n"
+                % (bucket_name, target_bucket_name)
+            )
+
 
     except ClientError as e:
-        text_output = text_output + "Unexpected error: %s \n" % e
+        text_output += "Unexpected error: %s \n" % e
 
     return text_output 

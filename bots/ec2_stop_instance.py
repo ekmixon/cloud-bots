@@ -11,15 +11,14 @@ import boto3
 def run_action(boto_session,rule,entity,params):
     instance = entity['id']
     ec2_client = boto_session.client('ec2')
-    
+
     result = ec2_client.stop_instances(InstanceIds=[instance])
 
     responseCode = result['ResponseMetadata']['HTTPStatusCode']
-    if responseCode >= 400:
-        text_output = "Unexpected error: %s \n" % str(result)
-    else:
-        text_output = "Instance stopped: %s \n" % instance
-
-    return text_output 
+    return (
+        "Unexpected error: %s \n" % str(result)
+        if responseCode >= 400
+        else "Instance stopped: %s \n" % instance
+    ) 
 
 

@@ -12,7 +12,7 @@ def run_action(boto_session,rule,entity,params):
     text_output = ""
     instance = entity['id']
     ec2_client = boto_session.client('ec2')
-    
+
     if len(entity['volumes']) == 0:
         text_output = "Instance only has Instance Store volumes and this bot only supports snapshotting EBS volumes. Skipping\n"
         return text_output

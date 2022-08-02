@@ -35,10 +35,10 @@ def run_action(boto_session, rule, entity, params):
             KmsKeyId=key_id,
         )
 
-        text_output = text_output + "CloudTrial: %s encrypt log file with key: %s." % (
-            cloudTrail_name.split('/')[-1], key_id)
+        text_output += f"CloudTrial: {cloudTrail_name.split('/')[-1]} encrypt log file with key: {key_id}."
+
 
     except ClientError as e:
-        text_output = text_output + 'Unexpected error: %s \n' % e
+        text_output += 'Unexpected error: %s \n' % e
 
     return text_output

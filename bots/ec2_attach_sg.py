@@ -15,7 +15,7 @@ def run_action(boto_session,rule,entity,params):
     vpc_id = entity['vpc']['id']
     ec2_resource = boto_session.resource('ec2')
     ec2_client = boto_session.client('ec2')
-    
+
     # Retrieve params, throw exception if not present
     try:
         param_group = params[0]

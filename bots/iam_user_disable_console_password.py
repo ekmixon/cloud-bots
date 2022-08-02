@@ -25,9 +25,9 @@ def run_action(boto_session, rule, entity, params):
         login_profile = iam_res.LoginProfile(username)
         # deletes the password for the specified IAM use
         login_profile.delete()
-        text_output = text_output + f'Iam user: {username}\'s console password was removed; '
+        text_output += f'Iam user: {username}\'s console password was removed; '
 
     except ClientError as e:
-        text_output = text_output + f'Unexpected error: {e}.'
+        text_output = f'{text_output}Unexpected error: {e}.'
 
     return text_output

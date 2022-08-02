@@ -61,10 +61,10 @@ def run_action(boto_session, rule, entity, params):
                     AccessKeyId=access_key_id,
                     Status='Inactive'
                 )
-                text_output = text_output + f'Iam user: {username} access key with id : {access_key_id} was deactivated' \
-                                            f' due of being unused for {passed_days_from_last_use} days '
+                text_output = f'{text_output}Iam user: {username} access key with id : {access_key_id} was deactivated due of being unused for {passed_days_from_last_use} days '
+
 
     except ClientError as e:
-        text_output = text_output + f'Unexpected error: {e}.'
+        text_output = f'{text_output}Unexpected error: {e}.'
 
     return text_output

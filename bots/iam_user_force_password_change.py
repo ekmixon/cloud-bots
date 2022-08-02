@@ -18,14 +18,14 @@ def run_action(boto_session,rule,entity,params):
             UserName=username,
             PasswordResetRequired=True
         )
- 
+
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
             text_output = "Unexpected error: %s \n" % str(result)
         else:
             text_output = "User %s updated. Their password will have to be changed at their next login.\n" % username
-        
+
     except ClientError as e:
         text_output = "Unexpected error: %s \n" % e
-    
+
     return text_output

@@ -29,8 +29,14 @@ Example rule: {'protocol': 'TCP', 'port': 22, 'portTo': 22, 'scope': '0.0.0.0/0'
 
 
 def stringify_rule(rule):
-    return 'rule_id: ' + rule[PROTOCOL].lower() + ' ' + rule[SCOPE] + ' port_range: ' + str(
-        rule[PORT_FROM]) + '->' + str(rule[PORT_TO]) + ' '
+    return (
+        (
+            f'rule_id: {rule[PROTOCOL].lower()} {rule[SCOPE]} port_range: {str(rule[PORT_FROM])}'
+            + '->'
+        )
+        + str(rule[PORT_TO])
+        + ' '
+    )
 
 
 """
@@ -41,8 +47,7 @@ Example rule: {'protocol': 'TCP', 'port': 22, 'portTo': 22, 'scope': '0.0.0.0/0'
 
 def verify_scope_is_cidr(rule):
     ip = re.split('/|\.', str(rule[SCOPE]))  # break ip to blocks
-    rule[SCOPE] = ip[0] + '.' + ip[1] + '.' + ip[2] + '.' + ip[3] + '/' + ip[4]
-    pass
+    rule[SCOPE] = f'{ip[0]}.{ip[1]}.{ip[2]}.{ip[3]}/{ip[4]}'
 
 
 """
@@ -53,11 +58,7 @@ Check if two scopes intersect , if it does returns true
 def is_two_scopes_overlap_ipv4(scope1, scope2):
     n1 = ipaddress.IPv4Network(scope1)
     n2 = ipaddress.IPv4Network(scope2)
-    intersect = n2.overlaps(n1)
-    if intersect:
-        return True
-    else:
-        return False # cidr if out of scope bounds
+    return bool(intersect := n2.overlaps(n1))
 
 
 """
@@ -107,7 +108,8 @@ def delete_sg(sg, sg_id, rule, direction, text_output):
             text_output = text_output + stringify_rule(rule) + 'deleted successfully from sg : ' + str(sg_id) + '; '
 
         except Exception as e:
-            text_output = text_output + f'Error while trying to delete security group. Error: {e}'
+            text_output = f'{text_output}Error while trying to delete security group. Error: {e}'
+
 
     elif direction == 'outbound':
         try:
@@ -128,10 +130,11 @@ def delete_sg(sg, sg_id, rule, direction, text_output):
             text_output = text_output + stringify_rule(rule) + ' deleted successfully from sg : ' + str(sg_id) + '; '
 
         except Exception as e:
-            text_output = text_output + f'Error while trying to delete security group. Error: {e}'
+            text_output = f'{text_output}Error while trying to delete security group. Error: {e}'
+
 
     else:
-        text_output = text_output + f'Error unknown direction ; \n'
+        text_output = f'{text_output}Error unknown direction ; \n'
 
     return text_output
 
@@ -155,7 +158,7 @@ def cloudtrail_event_lookup(boto_session, entity, attribute_value, attribute_key
     # Create Cloudtrail client
     cloudtrail_client = boto_session.client('cloudtrail')
     alert_time = datetime
-    
+
     # check if event time was given
     if entity.get('eventTime'):
         #  Parse given event time
@@ -192,7 +195,7 @@ def cloudtrail_event_lookup(boto_session, entity, attribute_value, attribute_key
     if not events.get('Events'):
         print('Warning - No matching events were found in cloudtrail lookup')
         return None
-    
+
     if is_return_single_event:
         # Return only one event - which is the closest to alert time
         return filter_events(events.get('Events'), alert_time, resource_name_to_filter)

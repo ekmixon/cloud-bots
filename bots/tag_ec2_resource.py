@@ -37,8 +37,7 @@ def run_action(boto_session,rule,entity,params):
         both_tags = " ".join(params)
 
         if "\"" not in both_tags: 
-            text_output = ("Tag \"%s\" does not follow formatting - skipping\n" % both_tags) # String is formatted wrong. Fail/exit
-            return text_output
+            return ("Tag \"%s\" does not follow formatting - skipping\n" % both_tags)
 
         #Capture text blocks in quotes or standalones
         pattern = re.compile("[(A-Za-z0-9_\.,\s-]*")
@@ -46,7 +45,7 @@ def run_action(boto_session,rule,entity,params):
         matched_tags = re.findall(pattern, both_tags)
         both_tags_no_spaces = [x.strip(' ') for x in matched_tags] # Remove empty spaces in array
         both_tags_no_spaces[:] = [x for x in both_tags_no_spaces if x != ''] # Remove empty array elements
-        
+
         key = both_tags_no_spaces[0]
         value = both_tags_no_spaces[1]
 
@@ -60,12 +59,10 @@ def run_action(boto_session,rule,entity,params):
             }
         ]
     )
-    
+
     responseCode = result['ResponseMetadata']['HTTPStatusCode']
     if responseCode >= 400:
-        text_output = "Unexpected error: %s \n" % str(result)
+        return "Unexpected error: %s \n" % str(result)
     else:
-        text_output = "Instance tagged: %s \nKey: %s | Value: %s \n" % (instance,key,value)
-
-    return text_output
+        return "Instance tagged: %s \nKey: %s | Value: %s \n" % (instance,key,value)
 

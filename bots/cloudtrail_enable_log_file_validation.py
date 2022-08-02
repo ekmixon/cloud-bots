@@ -19,7 +19,8 @@ def run_action(boto_session, rule, entity, params):
             Name=cloudTrail,
             EnableLogFileValidation=True,
         )
-        text_output = "Enable log File validation in CloudTrail: %s" % cloudTrail.split('/')[-1]
+        text_output = f"Enable log File validation in CloudTrail: {cloudTrail.split('/')[-1]}"
+
 
     except ClientError as e:
         text_output = "Unexpected error: %s \n" % e

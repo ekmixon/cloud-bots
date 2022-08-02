@@ -33,6 +33,6 @@ def run_action(boto_session, rule, entity, params):
     except ClientError as e:
 
         text_output = f'Unexpected error: {e}\n'
-        
+
 
     return text_output

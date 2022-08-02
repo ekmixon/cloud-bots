@@ -92,11 +92,11 @@ def run_action(boto_session, rule, entity, params):
             EnableLogFileValidation=True,
         )
 
-        text_output = text_output + "CloudTrial: %s encrypt log file with key: %s." % (
-            cloudTrail_name.split('/')[-1], key_id)
+        text_output += f"CloudTrial: {cloudTrail_name.split('/')[-1]} encrypt log file with key: {key_id}."
+
 
     except ClientError as e:
-        text_output = text_output + 'Unexpected error: %s \n' % e
+        text_output += 'Unexpected error: %s \n' % e
 
     return text_output
 
@@ -121,7 +121,7 @@ def create_customer_key(kms_client, iam_client, account_id, cloudTrail_name):
             KeyId=key_id
         )
 
-        text_output = text_output + key_id
+        text_output += key_id
 
     except ClientError as e:
         text_output = text_output + 'Unexpected error: %s \n' % e
@@ -142,7 +142,7 @@ def create_kms_policy(iam_client, account_id):
         kms_policy = kms_policy.replace("_ACCOUNT_NUMBER_", account_id)
         kms_policy = kms_policy.replace("_USER_NAME_", user_name)
 
-        text_output = text_output + kms_policy
+        text_output += kms_policy
 
     except ClientError as e:
         text_output = text_output + 'Unexpected error: %s \n' % e

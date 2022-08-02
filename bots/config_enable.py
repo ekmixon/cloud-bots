@@ -82,13 +82,12 @@ def add_policy_to_role(iam_client):
 def create_config_recorder(config_client, accountNumber, region, include_global_resource_types_region):
     print(f'{__file__} - Creating ConfigurationRecorder')
 
-    role_id = 'arn:aws:iam::' + accountNumber + ':role/AWSConfigRole'
+    role_id = f'arn:aws:iam::{accountNumber}:role/AWSConfigRole'
 
-    if region == include_global_resource_types_region:
-        include_resource_types = True
-        text_output = 'Creating Configuration recorder\nincludeGlobalResourceTypes will be set to true\n'
-    elif include_global_resource_types_region == 'Null':
-        ## include_global_resource_types_region is not set. Default to true
+    if (
+        region == include_global_resource_types_region
+        or include_global_resource_types_region == 'Null'
+    ):
         include_resource_types = True
         text_output = 'Creating Configuration recorder\nincludeGlobalResourceTypes will be set to true\n'
     else:
@@ -109,12 +108,12 @@ def create_config_recorder(config_client, accountNumber, region, include_global_
 
         responseCode = result['ResponseMetadata']['HTTPStatusCode']
         if responseCode >= 400:
-            text_output = text_output + 'Unexpected error: %s \n' % str(result)
+            text_output += 'Unexpected error: %s \n' % str(result)
         else:
-            text_output = text_output + 'AWS Config recorder created\n'
+            text_output += 'AWS Config recorder created\n'
 
     except ClientError as e:
-        text_output = text_output + 'Unexpected error: %s \n' % e
+        text_output += 'Unexpected error: %s \n' % e
 
     return text_output
 
@@ -176,10 +175,10 @@ def create_bucket(s3_client, s3_resource, region, target_bucket_name, accountNum
 
         except ClientError as e:
             error = e.response['Error']['Code']
-            if error == 'BucketAlreadyOwnedByYou':
-                text_output = 'Bucket %s already owned by this account. Checking bucket policy next\n' % target_bucket_name
-            elif error == 'BucketAlreadyExists':
+            if error == 'BucketAlreadyExists':
                 text_output = 'Bucket %s already exists. Checking bucket policy next\n' % target_bucket_name
+            elif error == 'BucketAlreadyOwnedByYou':
+                text_output = 'Bucket %s already owned by this account. Checking bucket policy next\n' % target_bucket_name
             elif error == 'OperationAborted':
                 text_output = 'Another bucket creation is in progress. Skipping.\n'
             else:
@@ -188,9 +187,9 @@ def create_bucket(s3_client, s3_resource, region, target_bucket_name, accountNum
         ### ATTACH BUCKET POLICY
         print(f'{__file__} - Attaching bucket policy')
         try:
-            bucket_arn = 'arn:aws:s3:::' + target_bucket_name
+            bucket_arn = f'arn:aws:s3:::{target_bucket_name}'
 
-            resource_id = bucket_arn + '/AWSLogs/' + accountNumber + '/Config/*'
+            resource_id = f'{bucket_arn}/AWSLogs/{accountNumber}/Config/*'
 
             bucket_policy = {
                 'Version': '2012-10-17',
@@ -234,12 +233,12 @@ def create_bucket(s3_client, s3_resource, region, target_bucket_name, accountNum
 
             responseCode = result['ResponseMetadata']['HTTPStatusCode']
             if responseCode >= 400:
-                text_output = text_output + 'Unexpected error: %s \n' % str(result)
+                text_output += 'Unexpected error: %s \n' % str(result)
             else:
-                text_output = text_output + 'Bucket policy attached to bucket for Config file delivery\n'
+                text_output += 'Bucket policy attached to bucket for Config file delivery\n'
 
         except ClientError as e:
-            text_output = text_output + 'Unexpected error: %s \n' % e
+            text_output += 'Unexpected error: %s \n' % e
 
     return text_output
 
@@ -303,14 +302,15 @@ def run_action(boto_session, rule, entity, params):
                     text_output = text_output + 'Include global_logs_region will be set as %s \n' % include_global_resource_types_region
 
             except:
-                text_output = text_output + 'Params formatting does not match required formatting. Using defaults.'
+                text_output = f'{text_output}Params formatting does not match required formatting. Using defaults.'
+
                 break
 
     #### IF VARIABLE ISN'T SET - FALL BACK
     try:
         print(f'{__file__} - Target_bucket_name: {target_bucket_name}')
     except NameError:
-        target_bucket_name = accountNumber + 'awsconfiglogs'
+        target_bucket_name = f'{accountNumber}awsconfiglogs'
         text_output = text_output + 'S3 Bucket name not set. Defaulting to %s.\n' % target_bucket_name
 
     try:

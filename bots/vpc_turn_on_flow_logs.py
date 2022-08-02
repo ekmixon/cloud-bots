@@ -158,9 +158,7 @@ def create_logs(boto_session, role_id, vpc_id, traffic_type, destination, bucket
     print(f'{__file__} - creating vpc flow logging')
 
     # Resource IDs need to be in a list - not string
-    vpc_ids = []
-    vpc_ids.append(vpc_id)
-
+    vpc_ids = [vpc_id]
     try:
         if destination == 'logs':
             response = ec2_client.create_flow_logs(
@@ -204,14 +202,14 @@ def run_action(boto_session, rule, entity, params):
     vpc_id = entity['id']
     account_id = entity['accountNumber']
     bucket_arn = False
-    policy_arn = 'arn:aws:iam::' + account_id + ':policy/vpcFlowLogDelivery'
-    role_id = 'arn:aws:iam::' + account_id + ':role/vpcFlowLogDelivery'
+    policy_arn = f'arn:aws:iam::{account_id}:policy/vpcFlowLogDelivery'
+    role_id = f'arn:aws:iam::{account_id}:role/vpcFlowLogDelivery'
 
     ## Set up params. We need a role ARN to come through in the params.
     text_output = ''
-    usage = 'Usage: AUTO: vpc_turn_on_flow_logs traffic_type=<all|accept|reject> destination=<logs|s3> s3_arn=arn:aws:s3:::my-bucket/my-logs/\nExample: AUTO: vpc_turn_on_flow_logs traffic_type=all destination=logs\nExample: AUTO: vpc_turn_on_flow_logs traffic_type=all destination=s3 s3_arn=arn:aws:s3:::my-bucket/my-logs/\n'
-
     if len(params) > 1:
+        usage = 'Usage: AUTO: vpc_turn_on_flow_logs traffic_type=<all|accept|reject> destination=<logs|s3> s3_arn=arn:aws:s3:::my-bucket/my-logs/\nExample: AUTO: vpc_turn_on_flow_logs traffic_type=all destination=logs\nExample: AUTO: vpc_turn_on_flow_logs traffic_type=all destination=s3 s3_arn=arn:aws:s3:::my-bucket/my-logs/\n'
+
         try:
             for index, param in enumerate(params):
                 if '=' in param:

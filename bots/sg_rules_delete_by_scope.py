@@ -49,7 +49,8 @@ def run_action(boto_session, rule, entity, params):
     try:
         scope, direction, port, protocol = params  # get params
     except Exception as e:
-        text_output = text_output + f'Params handling error. Please check parameters and try again. Error: {e}'
+        text_output += f'Params handling error. Please check parameters and try again. Error: {e}'
+
         raise Exception(text_output)
     # Create an ec2 resource
     ec2_resource = boto_session.resource('ec2')
@@ -57,16 +58,14 @@ def run_action(boto_session, rule, entity, params):
     sg = ec2_resource.SecurityGroup(sg_id)
     port = str(port)
     for rule in entity[f'{direction}Rules']:
-        if utils.is_scope_contained_by_other_ipv4(scope, rule[SCOPE]):
-            # rule have overlap ip's with the given scope
-            if port == '*' or int(port) == rule[PORT_FROM] == rule[PORT_TO]:
-                if protocol.lower() == rule[PROTOCOL].lower() or protocol == '*':
-                    if rule[PROTOCOL] == 'ALL':
-                        rule[PROTOCOL] = ALL_TRAFFIC_PROTOCOL  # '-1'
-                    text_output = text_output + utils.stringify_rule(rule) + 'rule was found in security group with port in range; '
-                    text_output = utils.delete_sg(sg, sg_id, rule, direction, text_output)
-
-        else:
-            continue
+        if (
+            utils.is_scope_contained_by_other_ipv4(scope, rule[SCOPE])
+            and (port == '*' or int(port) == rule[PORT_FROM] == rule[PORT_TO])
+            and (protocol.lower() == rule[PROTOCOL].lower() or protocol == '*')
+        ):
+            if rule[PROTOCOL] == 'ALL':
+                rule[PROTOCOL] = ALL_TRAFFIC_PROTOCOL  # '-1'
+            text_output = text_output + utils.stringify_rule(rule) + 'rule was found in security group with port in range; '
+            text_output = utils.delete_sg(sg, sg_id, rule, direction, text_output)
 
     return text_output
